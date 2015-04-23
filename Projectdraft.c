@@ -6,43 +6,33 @@
 #define volume ATD0DR4H
 
 long int absoluteTime=0; // global vaariable to count interrupts. 
-int ms=0, sec=0, min=0, hr=0;
+
 
 int bogusISRFlag= 0;
-unsigned char seg7[] ={0x3f, 0x06,0x5b,0x4f,0x66, 
-  0x6d,0x7d,0x07,0x7f,0x6f};  // 0-9
 
 
 interrupt void RTI_ISR(void) 
   {   
-      CRGFLG = 0x80; /* clear RTIF bit to enable next interrupt*/
+  
+      unsigned char y = PTH>>2;
+      static int x=0;
       absoluteTime++; // uses global vaariable
-      if(PTH & 0x01){
+      
       
       if(PTH & 0x01){
-          PWMDTY4 = ((PWMPER4/2)/(25500/(volume * 100)));
+      
++          PWMDTY5 = ((PWMPER5/2)/(25500/(volume * 100)));
       }else{
-          PWMDTY4 = 0;
+          PWMDTY5 = 0;
           }
-  
-      if ((absoluteTime % (ms/50)) == 0) {
-  	    PTT^= 0x20;// toggle  PTT to crate halp an audio wave on speaker.
+      /*if(!x){
+       
+        x=(y*25)+1;
+        CRGFLG = 0x80;
       } 
-      if(absoluteTime % 4 == 0){
-        ms++;
-         if(ms == 999){
-            sec++;
-            ms=0;
-            if(sec == 59){
-              min++;
-              sec=0;
-                if(min == 59){
-                  hr++;
-                  min=0;}
-               }
-            }
-         }
-      }
+        x--;*/
+         PWMPER5 = pitch;
+         CRGFLG = 0x80;
   }
 
 interrupt void UnimplementedISR(void) 
@@ -73,12 +63,21 @@ void Welcome (void){
      
      delayms(3000);
 }
-
+void lights(){
+    int i;
+     
+     i = volume / 32;
+     PORTB = 0xff << i;                       
+    
+}
 void init(){
+ 
+  
   LCDinit();
   ATDinit();
   RTIInit(0x11);
   
+  DDRP = 0x0f;
   DDRB = 0xFF;    //PORTB as output
   DDRT = 0xff;
   DDRJ = 0xFF;    //PTJ as output for Dragon12+ LEDs
@@ -93,7 +92,6 @@ void init(){
   PWMCTL = 0x0F;     // 8-bit, 15 cycle wait
   PWME = 0x20;       // Enable PWM5
   
-  ms=0, sec=0, min=0, hr=0;
    
   EnableInterrupts;
   Welcome();
@@ -109,11 +107,12 @@ void main(void)
   while(1)
   {
     
-
+  
 		
-	(void)sprintf(buffer, "Frequency: %d \nL1: %d L2: %d ", volume, volume, pitch);
+	(void)sprintf(buffer, "Frequency: %4d \n L1: %3d L2: %3d ", 25000/pitch , pitch , volume);
 	
 	LCDstring(buffer); //print the buffer string
+    lights();
 
   
   }
