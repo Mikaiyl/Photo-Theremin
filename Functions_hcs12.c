@@ -2,6 +2,10 @@
 #include <hidef.h>      /* common defines and macros */
 #include <mc9s12dp256.h>     /* registers & ports definitions */
 
+
+
+
+
 void delayms(unsigned int n){ // delay loop 
     unsigned long delay;    // Long is better than int because int fills up faster                
      delay = 0x000000FF * n ;// multiply by input 
@@ -83,55 +87,7 @@ void LCDstring(char i[]){  // iterate through array of chars and send to LCD
   ATD0CTL3 = 0b00000000; 
   ATD0CTL4 = 0b10000000; 
 //set SRES8=1 for 8-bit conversion (simpler than 10)
-	ATD0CTL5 = 0b00100111; //pin 7, SCAN=1, MULT=0
-//ATD0CTL5 = 0b00110000; //pin 0 start,SCAN=1,MULT=1
+//ATD0CTL5 = 0b00100111; //pin 7, SCAN=1, MULT=0
+  ATD0CTL5 = 0b00110000; //pin 0 start,SCAN=1,MULT=1
  }
 
-typedef void (*near tIsrFunc)(void); // tIsrFunc is a pointer to a function
-
-
-const tIsrFunc _vect[] @0x3E70 = 
-{   // table in RAM at 0x3E70 
-    /*  Top 8 vectors of Interrupt table @0xFFF0 in Flash, but DBug12  redirects them to shadow in RAM @ 0x3E70 thru 0x3E7F */
-        RTI_ISR,             /* vector 07: RTI */
-        UnimplementedISR,    /* vector 06: IRQ */
-        UnimplementedISR,    /* vector 05: XIRQ */
-        UnimplementedISR,    /* vector 04: SWI */
-        UnimplementedISR,    /* vector 03: unimplemented opcode trap*/
-        UnimplementedISR,    /* vector 02: COP */
-        UnimplementedISR,    /* vector 01: Clock monitor fail */
-        UnimplementedISR		 /* Reset vector */
- };
-void displayTime(int a, int b, int c, int d)
-{   
-    DDRP = 0xf7;
-    PTP = 0xf7;
-    PORTB=seg7[a];
-    
-    DDRP = 0xfb;
-    PTP = 0xfb;
-    PORTB=seg7[b];
-     
-	DDRP = 0xfd;
-	PTP = 0xfd; 
-    PORTB=seg7[c];
-    
-    DDRP = 0xfe;
-    PTP = 0xfe; 
-    PORTB=seg7[d];
- }
-void RTIInit(unsigned char rtictlvalue) {
-  /* setup RTI interrupt frequency & enable RTI interrupts, assuming 4MHz xtal */
-  /* clock divider set in RTICTL reg, and is (N+1)*2^(M+9), where N=bits(3:0), M=bits(6:4).
-    But M=0 disables divider.
-    f= 4MHz / ((n+1)*2^(M+9)).  
-    Useful values:  0x10 = 4kHz, 0x11 = 2kHz, 0x12 = 1.33kHz, 0x13 = 1kHz
-   */  
-   if (!rtictlvalue) //if zero, set to default
-		RTICTL =0x10;
-	else
-		RTICTL = rtictlvalue; /*set RTI prescaler */ 
-    CRGINT = 0b10000000; /* enable RTI interrupts */
- }
- 
- 

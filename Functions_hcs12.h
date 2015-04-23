@@ -13,7 +13,7 @@
 		extern void LCDinit(void);
 		extern void LCDchar(char c);
 		extern void LCDstring(char i[]);
-		extern void 
+		extern void RTIInit (unsigned char rtictlvalue); 
 		
 		extern void displayTime();
 		extern void ATDinit(void);
