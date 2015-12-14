@@ -2,16 +2,11 @@
 #include <hidef.h>      /* common defines and macros */
 #include <mc9s12dp256.h>     /* registers & ports definitions */
 
-
-
-
-
 void delayms(unsigned int n){ // delay loop 
     unsigned long delay;    // Long is better than int because int fills up faster                
      delay = 0x000000FF * n ;// multiply by input 
      while(delay--);         // count down
   }
-
 
 void delayus(unsigned int n)
   {  unsigned int delay;                    
@@ -74,7 +69,7 @@ void LCDstring(char i[]){  // iterate through array of chars and send to LCD
         if(i[count]=='\n'){
 		    LCDcmd(0xc0);   // skip to second line
 	      count++;
-	      }
+	}
     } 
 } 
 
